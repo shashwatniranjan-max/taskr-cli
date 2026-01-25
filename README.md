@@ -88,8 +88,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/shashwatniranjan-max/todo-commander-cli.git
-cd todo-commander-cli
+git clone https://github.com/shashwatniranjan-max/taskr-cli.git
+cd taskr-cli
 
 # Install dependencies
 npm install
