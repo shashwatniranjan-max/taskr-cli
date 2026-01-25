@@ -1,4 +1,4 @@
-# 📝 Todo Commander CLI
+# 📝 Taskr CLI
 
 A powerful and intuitive command-line todo application built with Node.js and Commander.js.
 
@@ -21,8 +21,8 @@ A powerful and intuitive command-line todo application built with Node.js and Co
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/todo-commander-cli.git
-cd todo-commander-cli
+git clone https://github.com/shashwatniranjan-max/taskr-cli.git
+cd taskr-cli
 
 # Install dependencies
 npm install
