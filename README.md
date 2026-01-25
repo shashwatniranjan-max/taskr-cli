@@ -88,7 +88,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/todo-commander-cli.git
+git clone https://github.com/shashwatniranjan-max/todo-commander-cli.git
 cd todo-commander-cli
 
 # Install dependencies
@@ -252,6 +252,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <br/>
 
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=social&logo=github)](https://github.com/yourusername)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=social&logo=github)](https://github.com/shashwatniranjan-max)
 
 </div>
