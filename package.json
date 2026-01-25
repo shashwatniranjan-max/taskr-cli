@@ -1,0 +1,23 @@
+{
+  "name": "todo-commander-cli",
+  "version": "1.0.0",
+  "description": "A powerful command-line todo application built with Node.js and Commander.js",
+  "main": "todoCommander.js",
+  "scripts": {
+    "start": "node todoCommander.js list",
+    "add": "node todoCommander.js add",
+    "list": "node todoCommander.js list"
+  },
+  "keywords": [
+    "todo",
+    "cli",
+    "commander",
+    "nodejs",
+    "task-manager"
+  ],
+  "author": "Shree",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0"
+  }
+}
