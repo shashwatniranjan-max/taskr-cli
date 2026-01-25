@@ -1,12 +1,22 @@
 [
   {
     "title": "go to gym",
-    "completed": false,
+    "completed": true,
     "id": 1769319639250
   },
   {
     "title": "go to gym",
     "completed": false,
     "id": 1769319640373
+  },
+  {
+    "title": "do the dishes",
+    "completed": false,
+    "id": 1769324745789
+  },
+  {
+    "title": "run for 5 km",
+    "completed": false,
+    "id": 1769324790988
   }
 ]
