@@ -1,22 +1,44 @@
 [
   {
+    "title": "study for 5 hours",
+    "completed": true,
+    "id": 1769339368067
+  },
+  {
     "title": "go to gym",
     "completed": true,
-    "id": 1769319639250
+    "id": 1769351188360
+  },
+  {
+    "title": "go to gym",
+    "completed": true,
+    "id": 1769351192904,
+    "priority": "high"
   },
   {
     "title": "go to gym",
     "completed": false,
-    "id": 1769319640373
+    "id": 1769351194577
   },
   {
-    "title": "do the dishes",
+    "title": "go to gym",
     "completed": false,
-    "id": 1769324745789
+    "id": 1769351196843
   },
   {
-    "title": "run for 5 km",
+    "title": "go to gym",
     "completed": false,
-    "id": 1769324790988
+    "id": 1769351198003
+  },
+  {
+    "title": "dsalkfs;ldakj",
+    "completed": false,
+    "id": 1769351312520
+  },
+  {
+    "title": "Test low priority",
+    "completed": false,
+    "id": 1769429259982,
+    "priority": "low"
   }
 ]
