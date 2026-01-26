@@ -21,12 +21,12 @@
   ╔════════════════════════════════════╗
   ║         📋 YOUR TODOS             ║
   ╠════════════════════════════════════╣
-   1. Learn Node.js
-       ✓ Done   
-   2. Build a CLI app
-       ✓ Done   
-   3. Add colorful output
-       ○ Pending
+   1. 🔴 Fix critical bug
+       ✓ Done    | HIGH
+   2. 🟡 Build a CLI app
+       ✓ Done    | MEDIUM
+   3. 🟢 Read documentation
+       ○ Pending | LOW
   ╚════════════════════════════════════╝
 ```
 
@@ -37,6 +37,10 @@
   ║  📝 Total:       3               ║
   ║  ✅ Completed:   2               ║
   ║  ⏳ Pending:     1               ║
+  ╠════════════════════════════════════╣
+  ║  🔴 High:        1               ║
+  ║  🟡 Medium:      1               ║
+  ║  🟢 Low:         1               ║
   ╠════════════════════════════════════╣
   ║  █████████████░░░░░░░ 66.7%  ║
   ╚════════════════════════════════════╝
@@ -54,10 +58,13 @@
 | Command | Description |
 |---------|-------------|
 | `todo add <task>` | Add a new task |
+| `todo add <task> -p high` | Add with priority |
 | `todo list` | View all todos |
+| `todo list -p high` | Filter by priority |
 | `todo update <id>` | Toggle completion |
 | `todo edit <id> <text>` | Edit a task |
 | `todo delete <id>` | Remove a task |
+| `todo priority <id> <level>` | Change priority |
 | `todo clear` | Clear completed |
 
 </td>
@@ -75,6 +82,8 @@
 - 📊 Visual progress bar
 - 🔍 Smart search
 - 💾 Persistent storage
+- 🏷️ Priority levels (🔴 🟡 🟢)
+- 📈 Sorted by priority
 
 </td>
 </tr>
@@ -116,7 +125,16 @@ todo stats
 todo add "Buy groceries"
 ```
 ```
-✨ Added: "Buy groceries"
+✨ Added: "Buy groceries" 🟡 MEDIUM
+```
+
+### 🏷️ Add with Priority
+```bash
+todo add "Fix critical bug" -p high
+todo add "Read docs" --priority low
+```
+```
+✨ Added: "Fix critical bug" 🔴 HIGH
 ```
 
 ### 📋 List All Tasks
@@ -138,6 +156,19 @@ todo edit 1 "Buy organic groceries"
 ```
 ```
 ✏️  Updated: "Buy groceries" → "Buy organic groceries"
+```
+
+### 🏷️ Change Priority
+```bash
+todo priority 1 high
+```
+```
+🏷️  Changed "Buy groceries" from medium → 🔴 HIGH
+```
+
+### 📋 Filter by Priority
+```bash
+todo list -p high
 ```
 
 ### 🗑️ Delete a Task
@@ -204,10 +235,18 @@ Todos are stored locally in `todos.json`:
   {
     "title": "Learn Node.js",
     "completed": true,
-    "id": 1706198400000
+    "id": 1706198400000,
+    "priority": "high"
   }
 ]
 ```
+
+**Priority Levels:**
+| Level | Icon | Color |
+|-------|------|-------|
+| `high` | 🔴 | Red |
+| `medium` | 🟡 | Yellow |
+| `low` | 🟢 | Green |
 
 ---
 
@@ -219,7 +258,7 @@ Todos are stored locally in `todos.json`:
 - [x] 📊 Statistics with progress bar
 - [x] 🎨 Colorful terminal output
 - [x] 🌍 Global CLI installation
-- [ ] ⚡ Priority levels (high/medium/low)
+- [x] 🏷️ Priority levels (high/medium/low)
 - [ ] 📅 Due dates & reminders
 - [ ] 📂 Multiple lists support
 - [ ] ☁️ Cloud sync
