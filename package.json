@@ -1,5 +1,5 @@
 {
-  "name": "todo-commander-cli",
+  "name": "taskr-cli",
   "version": "1.0.0",
   "description": "A powerful command-line todo application built with Node.js and Commander.js",
   "main": "todo.js",

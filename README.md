@@ -1,6 +1,6 @@
 <div align="center">
 
-# ✨ Todo CLI
+# ✨ Taskr CLI
 
 ### A beautiful, feature-rich command-line todo manager
 
@@ -217,7 +217,7 @@ todo clear
 ## 📁 Project Structure
 
 ```
-todo-commander-cli/
+taskr-cli/
 ├── 📄 todo.js          # Main CLI application
 ├── 📄 todos.json       # Data storage (auto-generated)
 ├── 📄 package.json     # Dependencies & scripts
