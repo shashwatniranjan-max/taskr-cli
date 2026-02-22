@@ -1,44 +1,14 @@
 [
   {
-    "title": "go to gym",
-    "completed": true,
-    "id": 1769351192904,
-    "priority": "high"
-  },
-  {
-    "title": "study for 5 hours",
-    "completed": true,
-    "id": 1769339368067
-  },
-  {
-    "title": "go to gym",
-    "completed": true,
-    "id": 1769351188360
-  },
-  {
-    "title": "go to gym",
+    "title": "Walk cat",
     "completed": false,
-    "id": 1769351194577
-  },
-  {
-    "title": "go to gym",
-    "completed": false,
-    "id": 1769351196843
-  },
-  {
-    "title": "go to gym",
-    "completed": false,
-    "id": 1769351198003
-  },
-  {
-    "title": "dsalkfs;ldakj",
-    "completed": false,
-    "id": 1769351312520
-  },
-  {
-    "title": "Test low priority",
-    "completed": false,
-    "id": 1769429259982,
+    "id": 1771791333442,
     "priority": "low"
+  },
+  {
+    "title": "go to gym",
+    "completed": false,
+    "id": 1771791472040,
+    "priority": "medium"
   }
 ]

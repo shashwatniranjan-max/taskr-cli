@@ -1,0 +1,276 @@
+# 📝 Taskr CLI — Complete Project Analysis
+
+## Overview
+
+**Taskr CLI** (`todo-commander-cli`) is a feature-rich command-line todo/task management application built with **Node.js**. It offers two interaction modes: a **direct CLI** (via command-line arguments) and a **fully interactive TUI menu** (when run with no arguments). All data is persisted in a local JSON file.
+
+| Attribute | Value |
+|-----------|-------|
+| **Author** | Shashwat |
+| **Entry Point** | [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js) |
+| **Data File** | [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) |
+| **License** | MIT |
+
+---
+
+## Project Structure
+
+```
+todo-commander-cli/
+├── todo.js          # Main application (592 lines) — all logic lives here
+├── demo.js          # Exact copy of todo.js (gitignored)
+├── todos.json       # JSON data store (auto-generated at runtime)
+├── test.js          # Simple integration test (no framework)
+├── package.json     # Project config & dependencies
+├── .gitignore       # Ignores node_modules, demo.js, .DS_Store, *.log
+└── README.md        # User-facing documentation
+```
+
+> [!NOTE]
+> [demo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/demo.js) is byte-for-byte identical to [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js) (both 29,838 bytes) and is gitignored. It appears to be a backup/scratch copy.
+
+---
+
+## Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `commander` | ^12.0.0 | CLI argument parsing & command routing |
+| `figlet` | ^1.10.0 | ASCII art banner generation |
+| `gradient-string` | ^1.2.0 | Gradient-colored terminal text |
+| `inquirer` | ^8.2.7 | Interactive prompts (list menus, input, confirm) |
+| `chalk` | *(imported but not in package.json)* | Terminal text coloring/styling |
+
+> [!WARNING]
+> `chalk` is `require()`-d on [line 5](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L5) but is **not listed in [package.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/package.json) dependencies**. It likely works because it's installed as a transitive dependency of another package, but this is fragile and should be explicitly declared.
+
+---
+
+## Architecture Deep Dive
+
+The entire application lives in a single file: [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js). It has **three logical layers**:
+
+```mermaid
+graph TD
+    A["Entry Point<br/>(Lines 579-591)"] -->|"argc <= 2"| B["Interactive TUI Menu<br/>(Lines 252-577)"]
+    A -->|"argc > 2"| C["Commander.js CLI<br/>(Lines 38-247)"]
+    B --> D["Shared Core Functions<br/>(Lines 19-36, 78-112)"]
+    C --> D
+    D --> E["todos.json<br/>(File System)"]
+```
+
+---
+
+### Layer 1: Core Data Functions (Lines 1–36, 78–112)
+
+#### Imports & Constants — [Lines 1–17](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L1-L17)
+
+- Loads `fs`, `path`, `commander`, `chalk`, `figlet`, `gradient-string`, and `inquirer`
+- Stores the data file path as `todoFilePath` — always resolves to [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) in the same directory as the script
+- Defines a `PRIORITIES` config object mapping `high`/`medium`/`low` to labels, chalk color functions, and emoji icons (`🔴🟡🟢`)
+
+#### [getTodos()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#19-27) — [Lines 19–26](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L19-L26)
+
+Reads and parses [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json). Returns an empty array on any error (file missing, invalid JSON, etc.). This is the **only read path** for todo data.
+
+#### [saveTodos(todo)](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#28-31) — [Lines 28–30](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L28-L30)
+
+Writes the entire todo array back to [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) with 2-space indentation. This is the **only write path**. The parameter is named `todo` but actually receives an array of todos.
+
+#### [sortByPriority(todos)](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#32-37) — [Lines 33–36](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L33-L36)
+
+Returns a **new sorted copy** using spread (`[...todos]`). Sort order: `high (0) > medium (1) > low (2)`. Todos without a `priority` field default to `"medium"`.
+
+#### [listTodos(filterPriority)](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#78-113) — [Lines 78–112](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L78-L112)
+
+The shared display function used by both CLI and interactive modes:
+1. Gets all todos, backfills missing `priority` fields with `"medium"`
+2. Sorts by priority
+3. Optionally filters by a specific priority level
+4. Renders a fancy box-drawn table with Unicode box-drawing characters (`╔═╗║╠╚`)
+5. Each todo shows: index number, priority icon, title (strikethrough if done), status line (✓ Done / ○ Pending), and priority label
+
+---
+
+### Layer 2: Commander.js CLI Commands (Lines 38–247)
+
+These commands are invoked when the user passes arguments, e.g. `node todo.js add "Buy milk" -p high`.
+
+#### `add <task>` — [Lines 38–52](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L38-L52)
+
+- Accepts a required `<task>` argument and an optional `-p, --priority <level>` flag (defaults to `"medium"`)
+- Validates priority against the allowed values; falls back to `"medium"` if invalid
+- Creates a todo object: `{ title, completed: false, id: Date.now(), priority }`
+- Saves and then auto-displays the updated list
+
+#### [list](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#78-113) — [Lines 54–60](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L54-L60)
+
+- Optional `-p, --priority <level>` flag to filter by priority
+- Delegates entirely to [listTodos()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#78-113)
+
+#### `delete <index>` — [Lines 62–76](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L62-L76)
+
+- Takes a 1-based index, converts to 0-based
+- Sorts todos by priority **first**, then uses the index against the sorted list
+- Validates the index, splices the matching todo, saves, and re-displays
+
+#### `update <index>` — [Lines 114–130](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L114-L130)
+
+- Toggles the `completed` boolean on the todo at the given (sorted) index
+- Shows a status message with the new state
+
+#### `edit <index> <newtask>` — [Lines 132–147](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L132-L147)
+
+- Replaces the `title` of the todo at the given sorted index
+- Shows the old → new title transition
+
+#### `priority <index> <level>` — [Lines 149–169](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L149-L169)
+
+- Changes the priority of a todo
+- Validates both the index and the priority level
+
+#### `clear` — [Lines 171–181](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L171-L181)
+
+- Filters out all todos where `completed === true`
+- Reports how many were cleared
+
+#### `search <keyword>` — [Lines 183–213](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L183-L213)
+
+- Case-insensitive substring search across todo titles
+- Displays results in a magenta-colored box (distinct from the regular cyan list)
+
+#### `stats` — [Lines 215–247](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L215-L247)
+
+- Computes: total, completed, pending, high/medium/low counts, and completion percentage
+- Renders a visual progress bar using `█` (filled) and `░` (empty) characters
+- Displayed in a blue-colored box
+
+---
+
+### Layer 3: Interactive TUI Menu (Lines 252–591)
+
+This is the **most sophisticated part** of the app — a full interactive UI powered by `inquirer`.
+
+#### Gradient Constants — [Lines 256–257](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L256-L257)
+
+Two gradient palettes:
+- `TASKR_GRADIENT`: Indigo → Violet → Purple → Fuchsia (`#6366f1 → #d946ef`)
+- `ACCENT_GRADIENT`: Cyan → Blue → Indigo (`#06b6d4 → #6366f1`)
+
+#### [showBanner()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#259-272) — [Lines 259–271](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L259-L271)
+
+- Clears the terminal
+- Generates "TASKR" in `ANSI Shadow` figlet font
+- Renders it with the gradient
+- Shows a decorative separator and version info
+
+#### [showQuickStats()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#273-291) — [Lines 273–290](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L273-L290)
+
+- Compact one-line summary: total tasks, done count, pending count, urgent (high+incomplete) count
+- A purple progress bar using `━` characters
+
+#### [interactiveMenu()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#292-331) — [Lines 292–330](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L292-L330)
+
+The main loop:
+1. Shows banner + quick stats
+2. Presents a categorized menu with separators (Actions / Manage / Info)
+3. 11 choices including Exit
+4. Loops forever until the user selects "Exit"
+5. Delegates to [handleAction()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#332-578) for each selection
+
+#### [handleAction(action)](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#332-578) — [Lines 332–577](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L332-L577)
+
+A large switch statement that handles all 9 actions interactively. Key differences from CLI counterparts:
+
+| Feature | CLI Mode | Interactive Mode |
+|---------|----------|-----------------|
+| **Selection** | Index number as argument | Inquirer list picker showing todo titles |
+| **Confirmation** | Immediate execution | Delete & Clear ask for confirmation |
+| **Empty state** | Error message | Graceful "No todos" message |
+| **After action** | Auto-lists | Returns to menu after "Press ENTER" |
+
+Each case follows the pattern:
+1. Get & sort todos
+2. Check if empty → bail
+3. Prompt user to select a todo (renders each with priority icon + status)
+4. Perform the action
+5. Call [listTodos()](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#78-113) to show updated state
+6. Wait for ENTER → redraw banner + stats
+
+#### Entry Point Router — [Lines 579–591](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#L579-L591)
+
+```javascript
+if (process.argv.length <= 2) {
+    interactiveMenu();  // No args → TUI mode
+} else {
+    program.parse();    // Args present → Commander CLI mode
+}
+```
+
+Handles TTY errors gracefully (e.g., when run in a non-interactive pipe).
+
+---
+
+## Data Model
+
+Each todo in [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) has this shape:
+
+```typescript
+interface Todo {
+    title: string;       // The task description
+    completed: boolean;  // Done status
+    id: number;          // Timestamp-based unique ID (Date.now())
+    priority?: string;   // "high" | "medium" | "low" (optional, defaults to "medium")
+}
+```
+
+The `priority` field was added later — older todos may lack it, and the code handles this with fallback defaults throughout.
+
+---
+
+## Test File
+
+[test.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/test.js) is a minimal integration test (no framework):
+
+1. **Backs up** existing [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json)
+2. **Deletes** [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) for a clean state
+3. **Runs** `node todo.js add "Test task from test"` via `execSync`
+4. **Reads back** [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) and verifies the first todo's title matches
+5. **Restores** the backup
+
+> [!NOTE]
+> The test references [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js) (not `todoCommander.js` as in [package.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/package.json)'s `main` field), so the naming is consistent with the actual file on disk, but inconsistent with [package.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/package.json).
+
+---
+
+## Issues & Observations
+
+### 🐛 Bugs / Risks
+
+1. **`chalk` not in [package.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/package.json)** — The app imports `chalk` but it's not a declared dependency. Likely works via transitive install, but a fresh `npm install` on another machine could fail.
+
+2. **[package.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/package.json) references `todoCommander.js`** — The `main` field and `scripts` reference `todoCommander.js`, but the actual file is [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js). The scripts won't work as-is.
+
+3. **Sort-then-index mutation bug** — In `delete`, `update`, `edit`, and `priority` CLI commands, the code sorts by priority first, then uses the user-provided index on the sorted array, then saves the sorted array. This means the order in [todos.json](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todos.json) changes after every mutation command, and the displayed index might not match what the user expects if they look at the raw file.
+
+4. **`Date.now()` as ID** — If two todos are added in rapid succession (same millisecond), they'll have the same ID. However, IDs aren't used for lookups (index-based), so this is cosmetic.
+
+### 💡 Code Quality Notes
+
+5. **Code duplication** — The `stats` rendering and `search` rendering are duplicated between CLI commands (lines 215–247, 183–213) and interactive [handleAction](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js#332-578) (lines 540–566, 512–537). These could be refactored into shared functions.
+
+6. **Single-file architecture** — All 592 lines live in one file. As features grow, splitting into modules (commands, data layer, UI utils) would improve maintainability.
+
+7. **No input sanitization** — Task titles are stored exactly as entered. There's no length limit or character filtering.
+
+8. **[demo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/demo.js) is a dead copy** — Same content as [todo.js](file:///c:/Users/Shree/OneDrive/Projects/todo-commander-cli/todo.js), gitignored, likely a forgotten backup.
+
+### ✅ Strengths
+
+9. **Beautiful TUI** — The interactive mode with gradient ASCII art, box-drawing characters, progress bars, and emoji icons is visually polished and delightful.
+
+10. **Backwards compatibility** — Priority field fallback (`t.priority || "medium"`) ensures old todos without priorities still work correctly.
+
+11. **Dual-mode design** — Supporting both quick CLI commands and full interactive menu is excellent UX for different workflows.
+
+12. **Confirmation prompts** — Delete and Clear in interactive mode ask for confirmation, preventing accidental data loss.
