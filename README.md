@@ -1,99 +1,23 @@
-<div align="center">
+# 📝 Taskr CLI
 
-# ✨ Taskr CLI
+A powerful and intuitive command-line todo application built with Node.js and Commander.js.
 
-### A beautiful, feature-rich command-line todo manager
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![CLI](https://img.shields.io/badge/CLI-Tool-blue?style=for-the-badge)
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![CLI](https://img.shields.io/badge/CLI-Tool-purple?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://www.npmjs.com/)
+## ✨ Features
 
-<br/>
-
-<img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
-
-</div>
-
-## 📸 Preview
-
-```
-  ╔════════════════════════════════════╗
-  ║         📋 YOUR TODOS             ║
-  ╠════════════════════════════════════╣
-   1. 🔴 Fix critical bug
-       ✓ Done    | HIGH
-   2. 🟡 Build a CLI app
-       ✓ Done    | MEDIUM
-   3. 🟢 Read documentation
-       ○ Pending | LOW
-  ╚════════════════════════════════════╝
-```
-
-```
-  ╔════════════════════════════════════╗
-  ║       📊 TODO STATISTICS          ║
-  ╠════════════════════════════════════╣
-  ║  📝 Total:       3               ║
-  ║  ✅ Completed:   2               ║
-  ║  ⏳ Pending:     1               ║
-  ╠════════════════════════════════════╣
-  ║  🔴 High:        1               ║
-  ║  🟡 Medium:      1               ║
-  ║  🟢 Low:         1               ║
-  ╠════════════════════════════════════╣
-  ║  █████████████░░░░░░░ 66.7%  ║
-  ╚════════════════════════════════════╝
-```
-
----
-
-## ⚡ Features
-
-<table>
-<tr>
-<td>
-
-### 📋 Core Commands
 | Command | Description |
 |---------|-------------|
-| `todo add <task>` | Add a new task |
-| `todo add <task> -p high` | Add with priority |
-| `todo list` | View all todos |
-| `todo list -p high` | Filter by priority |
-| `todo update <id>` | Toggle completion |
-| `todo edit <id> <text>` | Edit a task |
-| `todo delete <id>` | Remove a task |
-| `todo priority <id> <level>` | Change priority |
-| `todo clear` | Clear completed |
-
-</td>
-<td>
-
-### 🔥 Power Features
-| Command | Description |
-|---------|-------------|
-| `todo search <keyword>` | Find todos |
-| `todo stats` | View statistics |
-| `todo --help` | Show all commands |
-
-### ✨ Highlights
-- 🎨 Beautiful colored output
-- 📊 Visual progress bar
-- 🔍 Smart search
-- 💾 Persistent storage
-- 🏷️ Priority levels (🔴 🟡 🟢)
-- 📈 Sorted by priority
-
-</td>
-</tr>
-</table>
-
----
+| ➕ `add` | Add new tasks quickly |
+| 📋 `list` | View all todos with status indicators |
+| ✏️ `edit` | Modify existing tasks |
+| ✅ `update` | Toggle completion status |
+| 🗑️ `delete` | Remove tasks by index |
+| 🧹 `clear` | Remove all completed tasks |
 
 ## 🚀 Quick Start
-
-### Installation
 
 ```bash
 # Clone the repository
@@ -103,195 +27,106 @@ cd taskr-cli
 # Install dependencies
 npm install
 
-# Install globally (use from anywhere!)
-npm install -g .
+# Add your first todo
+node todoCommander.js add "Learn Node.js"
+
+# View all todos
+node todoCommander.js list
 ```
 
-### Usage
+## 📖 Commands
 
+### ➕ Add a new todo
 ```bash
-# Now use 'todo' from anywhere!
-todo add "Build something awesome"
-todo list
-todo stats
+node todoCommander.js add "Buy groceries"
+# Output: Added the todo: Buy groceries
 ```
 
----
-
-## 📖 Command Guide
-
-### ➕ Add a Task
+### 📋 List all todos
 ```bash
-todo add "Buy groceries"
+node todoCommander.js list
 ```
 ```
-✨ Added: "Buy groceries" 🟡 MEDIUM
+------Todo list------
+1. Buy groceries ..❌Pending
+2. Finish homework ..✅Done
+3. Call mom ..❌Pending
+----------------------
 ```
 
-### 🏷️ Add with Priority
+### ✅ Toggle todo status
 ```bash
-todo add "Fix critical bug" -p high
-todo add "Read docs" --priority low
-```
-```
-✨ Added: "Fix critical bug" 🔴 HIGH
+node todoCommander.js update 1
+# Toggles between ✅Done and ❌Pending
 ```
 
-### 📋 List All Tasks
+### ✏️ Edit a todo
 ```bash
-todo list
+node todoCommander.js edit 1 "Buy organic groceries"
+# Output: updated the todo on number 1. with: Buy organic groceries
 ```
 
-### ✅ Mark Complete/Incomplete
+### 🗑️ Delete a todo
 ```bash
-todo update 1
-```
-```
-🔄 Marked "Buy groceries" as completed ✓
+node todoCommander.js delete 2
+# Output: Deleted todo: Finish homework
 ```
 
-### ✏️ Edit a Task
+### 🧹 Clear completed todos
 ```bash
-todo edit 1 "Buy organic groceries"
+node todoCommander.js clear
+# Output: completed todos are cleared
 ```
-```
-✏️  Updated: "Buy groceries" → "Buy organic groceries"
-```
-
-### 🏷️ Change Priority
-```bash
-todo priority 1 high
-```
-```
-🏷️  Changed "Buy groceries" from medium → 🔴 HIGH
-```
-
-### 📋 Filter by Priority
-```bash
-todo list -p high
-```
-
-### 🗑️ Delete a Task
-```bash
-todo delete 1
-```
-```
-🗑️  Deleted: "Buy organic groceries"
-```
-
-### 🔍 Search Tasks
-```bash
-todo search "buy"
-```
-
-### 📊 View Statistics
-```bash
-todo stats
-```
-
-### 🧹 Clear Completed
-```bash
-todo clear
-```
-```
-🧹 Cleared 3 completed todo(s)
-```
-
----
 
 ## 🛠️ Tech Stack
 
-<div align="center">
-
-| Technology | Purpose |
-|------------|---------|
-| ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) | Runtime Environment |
-| ![Commander.js](https://img.shields.io/badge/Commander.js-red?style=flat-square) | CLI Framework |
-| ![Chalk](https://img.shields.io/badge/Chalk-orange?style=flat-square) | Terminal Styling |
-| ![JSON](https://img.shields.io/badge/JSON-000000?style=flat-square&logo=json&logoColor=white) | Data Storage |
-
-</div>
-
----
+- **Node.js** - Runtime environment
+- **Commander.js** - CLI framework for parsing arguments
+- **File System (fs)** - JSON-based data persistence
 
 ## 📁 Project Structure
 
 ```
-taskr-cli/
-├── 📄 todo.js          # Main CLI application
-├── 📄 todos.json       # Data storage (auto-generated)
-├── 📄 package.json     # Dependencies & scripts
-└── 📄 README.md        # You are here!
+todo-commander-cli/
+├── todoCommander.js    # Main CLI application
+├── todos.json          # Data storage (auto-generated)
+├── package.json        # Project dependencies
+└── README.md           # Documentation
 ```
-
----
 
 ## 💾 Data Format
 
-Todos are stored locally in `todos.json`:
-
+Todos are stored in `todos.json`:
 ```json
 [
   {
     "title": "Learn Node.js",
-    "completed": true,
-    "id": 1706198400000,
-    "priority": "high"
+    "completed": false,
+    "id": 1706198400000
   }
 ]
 ```
 
-**Priority Levels:**
-| Level | Icon | Color |
-|-------|------|-------|
-| `high` | 🔴 | Red |
-| `medium` | 🟡 | Yellow |
-| `low` | 🟢 | Green |
+## 🚀 Roadmap
 
----
-
-## 🗺️ Roadmap
-
-- [x] ➕ Add, edit, delete tasks
-- [x] ✅ Toggle completion status
-- [x] 🔍 Search functionality
-- [x] 📊 Statistics with progress bar
-- [x] 🎨 Colorful terminal output
-- [x] 🌍 Global CLI installation
-- [x] 🏷️ Priority levels (high/medium/low)
-- [ ] 📅 Due dates & reminders
-- [ ] 📂 Multiple lists support
-- [ ] ☁️ Cloud sync
-
----
+- [ ] 🔍 Search todos by keyword
+- [ ] 📊 Stats command (total/done/pending)
+- [ ] 🎨 Colored output with chalk
+- [ ] ⚡ Priority levels (high/medium/low)
+- [ ] 📅 Due dates
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how:
-
-1. 🍴 Fork the repository
-2. 🌿 Create your branch: `git checkout -b feature/amazing-feature`
-3. 💾 Commit changes: `git commit -m 'Add amazing feature'`
-4. 📤 Push to branch: `git push origin feature/amazing-feature`
-5. 🔃 Open a Pull Request
-
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
 ## 📜 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+MIT License - feel free to use this project for learning!
 
 ---
 
-<div align="center">
-
-### Made with ❤️ by Shashwat
-
-⭐ **Star this repo if you find it helpful!** ⭐
-
-<br/>
-
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shashwatniranjan-max)
-[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/Shashwat_niranj)
-
-</div>
+⭐ **Star this repo if you find it helpful!**

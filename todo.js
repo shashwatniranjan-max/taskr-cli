@@ -3,6 +3,9 @@ const fs = require("fs");
 const path = require("path");
 const {program} = require("commander");
 const chalk = require("chalk");
+const figlet = require("figlet");
+const gradient = require("gradient-string");
+const inquirer = require("inquirer");
 
 const todoFilePath = path.join(__dirname, "todos.json");
 
@@ -246,4 +249,343 @@ program
 
 
 
-program.parse();
+// ═══════════════════════════════════════════════════════════
+//  INTERACTIVE MENU MODE (when no command is provided)
+// ═══════════════════════════════════════════════════════════
+
+const TASKR_GRADIENT = gradient(['#6366f1', '#8b5cf6', '#a855f7', '#d946ef']);
+const ACCENT_GRADIENT = gradient(['#06b6d4', '#3b82f6', '#6366f1']);
+
+function showBanner() {
+    console.clear();
+    const banner = figlet.textSync('TASKR', {
+        font: 'ANSI Shadow',
+        horizontalLayout: 'fitted'
+    });
+    console.log('');
+    console.log(TASKR_GRADIENT(banner));
+    console.log(ACCENT_GRADIENT('  ─────────────────────────────────────────────────────────'));
+    console.log(chalk.dim('  ⚡ A powerful command-line task manager') + chalk.dim('         v1.0.0'));
+    console.log(ACCENT_GRADIENT('  ─────────────────────────────────────────────────────────'));
+    console.log('');
+}
+
+function showQuickStats() {
+    const todos = getTodos();
+    const total = todos.length;
+    const done = todos.filter(t => t.completed).length;
+    const pending = total - done;
+    const high = todos.filter(t => t.priority === 'high' && !t.completed).length;
+    const progress = total === 0 ? 0 : Math.round((done / total) * 100);
+    
+    const barLen = 25;
+    const filled = Math.round((progress / 100) * barLen);
+    const bar = chalk.hex('#8b5cf6')('━'.repeat(filled)) + chalk.gray('━'.repeat(barLen - filled));
+    
+    console.log(chalk.dim('  ┌─────────────────────────────────────────────┐'));
+    console.log(chalk.dim('  │') + `  📊 ${chalk.white.bold(total)} tasks  ${chalk.green('✓' + done)}  ${chalk.yellow('○' + pending)}  ${high > 0 ? chalk.red('🔴' + high + ' urgent') : ''}`.padEnd(55) + chalk.dim('│'));
+    console.log(chalk.dim('  │') + `  ${bar} ${chalk.white.bold(progress + '%')}`.padEnd(55) + chalk.dim('│'));
+    console.log(chalk.dim('  └─────────────────────────────────────────────┘'));
+    console.log('');
+}
+
+async function interactiveMenu() {
+    showBanner();
+    showQuickStats();
+    
+    while (true) {
+        const { action } = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'action',
+                message: chalk.hex('#8b5cf6').bold('What would you like to do?'),
+                choices: [
+                    new inquirer.Separator(chalk.dim(' ─── Actions ───────────────')),
+                    { name: '  📋  View All Todos', value: 'list' },
+                    { name: '  ➕  Add New Todo', value: 'add' },
+                    { name: '  ✅  Toggle Complete/Pending', value: 'update' },
+                    { name: '  ✏️   Edit Todo', value: 'edit' },
+                    { name: '  🏷️   Change Priority', value: 'priority' },
+                    new inquirer.Separator(chalk.dim(' ─── Manage ────────────────')),
+                    { name: '  🗑️   Delete Todo', value: 'delete' },
+                    { name: '  🧹  Clear Completed', value: 'clear' },
+                    new inquirer.Separator(chalk.dim(' ─── Info ──────────────────')),
+                    { name: '  🔍  Search Todos', value: 'search' },
+                    { name: '  📊  View Statistics', value: 'stats' },
+                    new inquirer.Separator(chalk.dim(' ───────────────────────────')),
+                    { name: chalk.dim('  🚪  Exit'), value: 'exit' },
+                ],
+                pageSize: 15,
+                loop: false
+            }
+        ]);
+
+        if (action === 'exit') {
+            console.log(TASKR_GRADIENT('\n  ✨ Stay productive! Goodbye.\n'));
+            process.exit(0);
+        }
+
+        await handleAction(action);
+    }
+}
+
+async function handleAction(action) {
+    console.log('');
+
+    switch (action) {
+        case 'list': {
+            const { filterChoice } = await inquirer.prompt([{
+                type: 'list',
+                name: 'filterChoice',
+                message: 'Filter by priority?',
+                choices: [
+                    { name: '  All Todos', value: null },
+                    { name: '  🔴 High Only', value: 'high' },
+                    { name: '  🟡 Medium Only', value: 'medium' },
+                    { name: '  🟢 Low Only', value: 'low' },
+                ]
+            }]);
+            listTodos(filterChoice);
+            break;
+        }
+
+        case 'add': {
+            const { task } = await inquirer.prompt([{
+                type: 'input',
+                name: 'task',
+                message: 'Enter your task:',
+                validate: input => input.trim() ? true : 'Task cannot be empty!'
+            }]);
+            const { priority } = await inquirer.prompt([{
+                type: 'list',
+                name: 'priority',
+                message: 'Set priority:',
+                choices: [
+                    { name: '🔴 High', value: 'high' },
+                    { name: '🟡 Medium', value: 'medium' },
+                    { name: '🟢 Low', value: 'low' },
+                ],
+                default: 'medium'
+            }]);
+            const todos = getTodos();
+            todos.push({ title: task.trim(), completed: false, id: Date.now(), priority });
+            saveTodos(todos);
+            const p = PRIORITIES[priority];
+            console.log(chalk.green(`\n  ✨ Added: "${task.trim()}" ${p.icon} ${p.color(p.label)}`));
+            listTodos();
+            break;
+        }
+
+        case 'update': {
+            const todos = sortByPriority(getTodos());
+            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to update.')); break; }
+            const { selected } = await inquirer.prompt([{
+                type: 'list',
+                name: 'selected',
+                message: 'Which todo to toggle?',
+                choices: todos.map((t, i) => ({
+                    name: `  ${(i+1).toString().padStart(2)}. ${PRIORITIES[t.priority||'medium'].icon} ${t.completed ? chalk.dim.strikethrough(t.title) : t.title} ${t.completed ? chalk.green('✓') : chalk.red('○')}`,
+                    value: i
+                })),
+                pageSize: 15
+            }]);
+            todos[selected].completed = !todos[selected].completed;
+            saveTodos(todos);
+            const status = todos[selected].completed ? chalk.green('completed ✓') : chalk.yellow('pending');
+            console.log(chalk.blue(`\n  🔄 Marked "${todos[selected].title}" as ${status}`));
+            listTodos();
+            break;
+        }
+
+        case 'edit': {
+            const todos = sortByPriority(getTodos());
+            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to edit.')); break; }
+            const { selected } = await inquirer.prompt([{
+                type: 'list',
+                name: 'selected',
+                message: 'Which todo to edit?',
+                choices: todos.map((t, i) => ({
+                    name: `  ${(i+1).toString().padStart(2)}. ${PRIORITIES[t.priority||'medium'].icon} ${t.title}`,
+                    value: i
+                })),
+                pageSize: 15
+            }]);
+            const { newtask } = await inquirer.prompt([{
+                type: 'input',
+                name: 'newtask',
+                message: `New text (current: "${todos[selected].title}"):`,
+                default: todos[selected].title,
+                validate: input => input.trim() ? true : 'Task cannot be empty!'
+            }]);
+            const oldTask = todos[selected].title;
+            todos[selected].title = newtask.trim();
+            saveTodos(todos);
+            console.log(chalk.blue(`\n  ✏️  Updated: "${chalk.dim(oldTask)}" → "${chalk.white(newtask.trim())}"`));
+            listTodos();
+            break;
+        }
+
+        case 'priority': {
+            const todos = sortByPriority(getTodos());
+            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos.')); break; }
+            const { selected } = await inquirer.prompt([{
+                type: 'list',
+                name: 'selected',
+                message: 'Change priority for which todo?',
+                choices: todos.map((t, i) => ({
+                    name: `  ${(i+1).toString().padStart(2)}. ${PRIORITIES[t.priority||'medium'].icon} ${t.title} [${(t.priority||'medium').toUpperCase()}]`,
+                    value: i
+                })),
+                pageSize: 15
+            }]);
+            const { level } = await inquirer.prompt([{
+                type: 'list',
+                name: 'level',
+                message: 'New priority:',
+                choices: [
+                    { name: '🔴 High', value: 'high' },
+                    { name: '🟡 Medium', value: 'medium' },
+                    { name: '🟢 Low', value: 'low' },
+                ],
+                default: todos[selected].priority || 'medium'
+            }]);
+            todos[selected].priority = level;
+            saveTodos(todos);
+            const p = PRIORITIES[level];
+            console.log(chalk.blue(`\n  🏷️  Changed "${todos[selected].title}" → ${p.icon} ${p.color(level)}`));
+            listTodos();
+            break;
+        }
+
+        case 'delete': {
+            const todos = sortByPriority(getTodos());
+            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to delete.')); break; }
+            const { selected } = await inquirer.prompt([{
+                type: 'list',
+                name: 'selected',
+                message: 'Which todo to delete?',
+                choices: todos.map((t, i) => ({
+                    name: `  ${(i+1).toString().padStart(2)}. ${PRIORITIES[t.priority||'medium'].icon} ${t.title}`,
+                    value: i
+                })),
+                pageSize: 15
+            }]);
+            const { confirm } = await inquirer.prompt([{
+                type: 'confirm',
+                name: 'confirm',
+                message: `Delete "${todos[selected].title}"?`,
+                default: false
+            }]);
+            if (confirm) {
+                const removed = todos.splice(selected, 1);
+                saveTodos(todos);
+                console.log(chalk.yellow(`\n  🗑️  Deleted: "${removed[0].title}"`));
+            } else {
+                console.log(chalk.dim('  Cancelled.'));
+            }
+            listTodos();
+            break;
+        }
+
+        case 'clear': {
+            const todos = getTodos();
+            const completedCount = todos.filter(t => t.completed).length;
+            if (completedCount === 0) {
+                console.log(chalk.dim('  No completed todos to clear.'));
+                break;
+            }
+            const { confirm } = await inquirer.prompt([{
+                type: 'confirm',
+                name: 'confirm',
+                message: `Clear ${completedCount} completed todo(s)?`,
+                default: true
+            }]);
+            if (confirm) {
+                const newTodos = todos.filter(t => !t.completed);
+                saveTodos(newTodos);
+                console.log(chalk.yellow(`\n  🧹 Cleared ${completedCount} completed todo(s)`));
+            }
+            listTodos();
+            break;
+        }
+
+        case 'search': {
+            const { keyword } = await inquirer.prompt([{
+                type: 'input',
+                name: 'keyword',
+                message: 'Search for:',
+                validate: input => input.trim() ? true : 'Enter a keyword!'
+            }]);
+            const todos = sortByPriority(getTodos());
+            const results = todos.filter(t => t.title.toLowerCase().includes(keyword.toLowerCase().trim()));
+            if (results.length === 0) {
+                console.log(chalk.yellow(`\n  🔍 No todos found matching "${keyword.trim()}"`));
+            } else {
+                console.log(chalk.magenta.bold(`\n  ╔════════════════════════════════════╗`));
+                console.log(chalk.magenta.bold(`  ║`) + chalk.white.bold(`   🔍 Results for "${keyword.trim()}"`.padEnd(35)) + chalk.magenta.bold(`║`));
+                console.log(chalk.magenta.bold(`  ╠════════════════════════════════════╣`));
+                results.forEach((todo, index) => {
+                    const p = PRIORITIES[todo.priority || 'medium'];
+                    const status = todo.completed ? chalk.green.bold(' ✓ Done   ') : chalk.red.bold(' ○ Pending');
+                    const title = todo.completed ? chalk.dim.strikethrough(todo.title) : chalk.white(todo.title);
+                    console.log(`  ${chalk.gray((index+1).toString().padStart(2)+'.')} ${p.icon} ${title}`);
+                    console.log(`      ${status} | ${p.color(p.label)}`);
+                });
+                console.log(chalk.magenta.bold(`  ╚════════════════════════════════════╝`));
+            }
+            console.log('');
+            break;
+        }
+
+        case 'stats': {
+            const todos = getTodos();
+            const completed = todos.filter(t => t.completed).length;
+            const pending = todos.length - completed;
+            const progress = todos.length === 0 ? 0 : ((completed/todos.length)*100).toFixed(1);
+            const highCount = todos.filter(t => t.priority === 'high').length;
+            const mediumCount = todos.filter(t => (t.priority || 'medium') === 'medium').length;
+            const lowCount = todos.filter(t => t.priority === 'low').length;
+            const barLength = 20;
+            const filledLength = Math.round((progress / 100) * barLength);
+            const bar = chalk.green('█'.repeat(filledLength)) + chalk.gray('░'.repeat(barLength - filledLength));
+            
+            console.log(chalk.blue.bold(`\n  ╔════════════════════════════════════╗`));
+            console.log(chalk.blue.bold(`  ║`) + chalk.white.bold(`       📊 TODO STATISTICS          `) + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ╠════════════════════════════════════╣`));
+            console.log(chalk.blue.bold(`  ║`) + `  📝 Total:     ${chalk.white.bold(todos.length.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ║`) + `  ✅ Completed: ${chalk.green.bold(completed.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ║`) + `  ⏳ Pending:   ${chalk.red.bold(pending.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ╠════════════════════════════════════╣`));
+            console.log(chalk.blue.bold(`  ║`) + `  🔴 High:      ${chalk.red.bold(highCount.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ║`) + `  🟡 Medium:    ${chalk.yellow.bold(mediumCount.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ║`) + `  🟢 Low:       ${chalk.green.bold(lowCount.toString().padStart(3))}               ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ╠════════════════════════════════════╣`));
+            console.log(chalk.blue.bold(`  ║`) + `  ${bar} ${progress}%  ` + chalk.blue.bold(`║`));
+            console.log(chalk.blue.bold(`  ╚════════════════════════════════════╝\n`));
+            break;
+        }
+    }
+
+    // Pause before going back to menu
+    await inquirer.prompt([{
+        type: 'input',
+        name: 'continue',
+        message: chalk.dim('Press ENTER to continue...'),
+    }]);
+    showBanner();
+    showQuickStats();
+}
+
+// Route: interactive mode if no command given, otherwise commander handles it
+if (process.argv.length <= 2) {
+    interactiveMenu().catch(err => {
+        if (err.isTtyError) {
+            console.error(chalk.red('Interactive mode requires a TTY terminal.'));
+        } else {
+            console.error(chalk.red('Error:'), err.message);
+        }
+        process.exit(1);
+    });
+} else {
+    program.parse();
+}

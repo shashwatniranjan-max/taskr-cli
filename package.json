@@ -1,15 +1,12 @@
 {
-  "name": "taskr-cli",
+  "name": "todo-commander-cli",
   "version": "1.0.0",
   "description": "A powerful command-line todo application built with Node.js and Commander.js",
-  "main": "todo.js",
-  "bin": {
-    "todo": "./todo.js"
-  },
+  "main": "todoCommander.js",
   "scripts": {
-    "start": "node todo.js list",
-    "add": "node todo.js add",
-    "list": "node todo.js list"
+    "start": "node todoCommander.js list",
+    "add": "node todoCommander.js add",
+    "list": "node todoCommander.js list"
   },
   "keywords": [
     "todo",
@@ -21,7 +18,9 @@
   "author": "Shree",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^4.1.2",
-    "commander": "^12.0.0"
+    "commander": "^12.0.0",
+    "figlet": "^1.10.0",
+    "gradient-string": "^1.2.0",
+    "inquirer": "^8.2.7"
   }
 }

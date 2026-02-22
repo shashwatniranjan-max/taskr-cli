@@ -1,5 +1,11 @@
 [
   {
+    "title": "go to gym",
+    "completed": true,
+    "id": 1769351192904,
+    "priority": "high"
+  },
+  {
     "title": "study for 5 hours",
     "completed": true,
     "id": 1769339368067
@@ -8,12 +14,6 @@
     "title": "go to gym",
     "completed": true,
     "id": 1769351188360
-  },
-  {
-    "title": "go to gym",
-    "completed": true,
-    "id": 1769351192904,
-    "priority": "high"
   },
   {
     "title": "go to gym",
