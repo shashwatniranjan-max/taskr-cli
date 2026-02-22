@@ -1,4 +1,6 @@
 node_modules/
 .DS_Store
 *.log
-demo.js
+demo/v1.js
+demo/demo.js
+demo
