@@ -1,25 +1,25 @@
 {
-  "name": "todo-commander-cli",
+  "name": "task-commander-cli",
   "version": "1.0.0",
-  "description": "A powerful command-line todo application built with Node.js and Commander.js",
-  "main": "todo.js",
+  "description": "A powerful command-line task application built with Node.js and Commander.js",
+  "main": "index.js",
   "bin": {
-    "todo": "./todo.js"
+    "task": "./index.js"
   },
   "scripts": {
-    "start": "node todo.js",
-    "add": "node todo.js add",
-    "list": "node todo.js list",
+    "start": "node index.js",
+    "add": "node index.js add",
+    "list": "node index.js list",
     "test": "node test.js"
   },
   "keywords": [
-    "todo",
+    "task",
     "cli",
     "commander",
     "nodejs",
     "task-manager"
   ],
-  "author": "Shree",
+  "author": "Shashwat",
   "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.2",

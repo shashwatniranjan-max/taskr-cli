@@ -2,7 +2,7 @@
 
 # ✨ Taskr CLI
 
-### A beautiful, dual-mode command-line todo manager
+### A beautiful, dual-mode command-line task manager
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -16,7 +16,7 @@
 
 ```text
   ╔════════════════════════════════════╗
-  ║         📋 YOUR TODOS             ║
+  ║         📋 YOUR TASKS             ║
   ╠════════════════════════════════════╣
    1. ▲ Fix critical bug
       ✓ Done    │ HIGH
@@ -29,7 +29,7 @@
 
 ```text
   ╔════════════════════════════════════╗
-  ║       📊 TODO STATISTICS          ║
+  ║       📊 TASK STATISTICS          ║
   ╠════════════════════════════════════╣
   ║  📝 Total:       3                ║
   ║  ✅ Completed:   1                ║
@@ -48,7 +48,7 @@
 - ✅ Two usage modes: argument-based CLI + interactive menu mode
 - 🏷️ Priority system (`high`, `medium`, `low`) with sorted output
 - 🔍 Search command and 📊 statistics dashboard with progress bar
-- 💾 Local persistence in `todos.json` (no database required)
+- 💾 Local persistence in `tasks.json` (no database required)
 - 🎨 Colorful terminal UI using `chalk`, `figlet`, and `gradient-string`
 - 🛡️ Safe destructive flow for `remove-all` with double confirmation
 
@@ -66,31 +66,31 @@ npm install
 npm install -g .
 
 # Run interactive mode (no args)
-todo
+task
 
 # Run commands
-todo add "Build Taskr" -p high
-todo list
+task add "Build Taskr" -p high
+task list
 ```
 
-For local development without global install, use `node todo.js ...`.
+For local development without global install, use `node index.js ...`.
 
 ## 📖 Command Guide
 
 | Command | Description |
 |---------|-------------|
-| `todo` | Launch interactive menu mode |
-| `todo add "task" -p <level>` | Add a task with optional priority |
-| `todo list` | List all todos |
-| `todo list -p high` | List only one priority |
-| `todo update <index>` | Toggle done/pending |
-| `todo edit <index> "new text"` | Edit a task title |
-| `todo delete <index>` | Delete one task |
-| `todo priority <index> <level>` | Change task priority |
-| `todo search <keyword>` | Search todos by keyword |
-| `todo stats` | Show totals + progress bar |
-| `todo clear` | Remove completed todos |
-| `todo remove-all` | Remove all todos (double confirm) |
+| `task` | Launch interactive menu mode |
+| `task add "task" -p <level>` | Add a task with optional priority |
+| `task list` | List all tasks |
+| `task list -p high` | List only one priority |
+| `task update <index>` | Toggle done/pending |
+| `task edit <index> "new text"` | Edit a task title |
+| `task delete <index>` | Delete one task |
+| `task priority <index> <level>` | Change task priority |
+| `task search <keyword>` | Search tasks by keyword |
+| `task stats` | Show totals + progress bar |
+| `task clear` | Remove completed tasks |
+| `task remove-all` | Remove all tasks (double confirm) |
 
 ### Priority Levels
 
@@ -106,15 +106,15 @@ For local development without global install, use `node todo.js ...`.
 node test.js
 ```
 
-The test script runs an end-to-end CLI flow and restores your original `todos.json` at the end.
+The test script runs an end-to-end CLI flow and restores your original `tasks.json` at the end.
 
 ## 📁 Project Structure
 
 ```text
-todo-commander-cli/
-├── todo.js                  # Main CLI + interactive app
+taskr-cli/
+├── index.js                  # Main CLI + interactive app
 ├── test.js                  # Comprehensive command flow test
-├── todos.json               # Local todo storage
+├── tasks.json               # Local task storage
 ├── package.json             # Project metadata and dependencies
 ├── package-lock.json
 ├── README.md
@@ -123,7 +123,7 @@ todo-commander-cli/
 
 ## 💾 Data Format
 
-Todos are stored in `todos.json`:
+Tasks are stored in `tasks.json`:
 
 ```json
 [

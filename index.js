@@ -7,7 +7,7 @@ const figlet = require("figlet");
 const gradient = require("gradient-string");
 const inquirer = require("inquirer");
 
-const todoFilePath = path.join(__dirname, "todos.json");
+const taskFilePath = path.join(__dirname, "tasks.json");
 
 // Priority configuration with labels, colors, and icons
 const PRIORITIES = {
@@ -22,97 +22,97 @@ const ACCENT_NUM = chalk.hex('#a78bfa');  // Number accent (light violet)
 const STATUS_DONE = chalk.hex('#34d399'); // Completed (emerald)
 const STATUS_PEND = chalk.hex('#fbbf24'); // Pending (amber)
 
-const getTodos = () => {
+const getTasks = () => {
     try {
-        const data = fs.readFileSync(todoFilePath, "utf-8");
+        const data = fs.readFileSync(taskFilePath, "utf-8");
         return JSON.parse(data);
     } catch (err) {
         return [];
     }
 };
 
-const saveTodos = (todo) => {
-    fs.writeFileSync(todoFilePath, JSON.stringify(todo, null, 2));
+const saveTasks = (task) => {
+    fs.writeFileSync(taskFilePath, JSON.stringify(task, null, 2));
 }
 
-// Sort todos by priority (high > medium > low)
-const sortByPriority = (todos) => {
+// Sort tasks by priority (high > medium > low)
+const sortByPriority = (tasks) => {
     const order = { high: 0, medium: 1, low: 2 };
-    return [...todos].sort((a, b) => order[a.priority || "medium"] - order[b.priority || "medium"]);
+    return [...tasks].sort((a, b) => order[a.priority || "medium"] - order[b.priority || "medium"]);
 };
 
 program
     .command("add <task>")
-    .description("Add a new todo task")
+    .description("Add a new task")
     .option("-p, --priority <level>", "Set priority (high, medium, low)", "medium")
     .action((task, options) => {
         const priority = ["high", "medium", "low"].includes(options.priority)
             ? options.priority
             : "medium";
-        const todos = getTodos();
-        todos.push({ title: task, completed: false, id: Date.now(), priority });
-        saveTodos(todos);
+        const tasks = getTasks();
+        tasks.push({ title: task, completed: false, id: Date.now(), priority });
+        saveTasks(tasks);
         const p = PRIORITIES[priority];
         console.log(chalk.green(`✨ Added: "${task}" ${p.icon} ${p.color(p.label)}`));
-        listTodos();
+        listTasks();
         process.exit(0);
     })
 
 program
     .command("list")
-    .description("list all the todos")
+    .description("list all the tasks")
     .option("-p, --priority <level>", "Filter by priority (high, medium, low)")
     .action((options) => {
-        listTodos(options.priority);
+        listTasks(options.priority);
         process.exit(0);
     })
 
 program
     .command("delete <index>")
-    .description("Delete a todo at specific index")
+    .description("Delete a task at specific index")
     .action((index) => {
-        const todos = sortByPriority(getTodos());
-        const todoIndex = parseInt(index, 10) - 1;
-        if (isNaN(todoIndex) || todoIndex < 0 || todoIndex >= todos.length) {
+        const tasks = sortByPriority(getTasks());
+        const taskIndex = parseInt(index, 10) - 1;
+        if (isNaN(taskIndex) || taskIndex < 0 || taskIndex >= tasks.length) {
             console.error(chalk.red("❌ Invalid number! Please enter a valid number from the list."));
             process.exit(1);
         }
-        const removedTodo = todos.splice(todoIndex, 1);
-        saveTodos(todos);
-        console.log(chalk.yellow(`🗑️  Deleted: "${removedTodo[0].title}"`));
-        listTodos();
+        const removedTask = tasks.splice(taskIndex, 1);
+        saveTasks(tasks);
+        console.log(chalk.yellow(`🗑️  Deleted: "${removedTask[0].title}"`));
+        listTasks();
         process.exit(0);
     })
 
-function listTodos(filterPriority = null) {
-    let todos = getTodos();
+function listTasks(filterPriority = null) {
+    let tasks = getTasks();
 
-    // Add default priority for old todos (backwards compatibility)
-    todos = todos.map(t => ({ ...t, priority: t.priority || "medium" }));
+    // Add default priority for old tasks (backwards compatibility)
+    tasks = tasks.map(t => ({ ...t, priority: t.priority || "medium" }));
 
     // Sort by priority (high first, then medium, then low)
-    todos = sortByPriority(todos);
+    tasks = sortByPriority(tasks);
 
     // Filter by priority if specified
     if (filterPriority && ["high", "medium", "low"].includes(filterPriority)) {
-        todos = todos.filter(t => t.priority === filterPriority);
+        tasks = tasks.filter(t => t.priority === filterPriority);
     }
 
-    if (todos.length === 0) {
-        console.log(chalk.dim("\n  📭 No todos yet. Add one with: todo add \"your task\""));
+    if (tasks.length === 0) {
+        console.log(chalk.dim("\n  📭 No tasks yet. Add one with: task add \"your task\""));
         return;
     }
     console.log(PB.bold("\n  ╔════════════════════════════════════╗"));
-    console.log(PB.bold("  ║") + chalk.white.bold("         📋 YOUR TODOS             ") + PB.bold("║"));
+    console.log(PB.bold("  ║") + chalk.white.bold("         📋 YOUR TASKS             ") + PB.bold("║"));
     console.log(PB.bold("  ╠════════════════════════════════════╣"));
-    todos.forEach((todo, index) => {
-        const p = PRIORITIES[todo.priority || "medium"];
-        const status = todo.completed
+    tasks.forEach((task, index) => {
+        const p = PRIORITIES[task.priority || "medium"];
+        const status = task.completed
             ? STATUS_DONE.bold(" ✓ Done   ")
             : STATUS_PEND.bold(" ○ Pending");
-        const title = todo.completed
-            ? chalk.dim.strikethrough(todo.title)
-            : chalk.white(todo.title);
+        const title = task.completed
+            ? chalk.dim.strikethrough(task.title)
+            : chalk.white(task.title);
         const num = ACCENT_NUM(`  ${(index + 1).toString().padStart(2, ' ')}.`);
         console.log(`${num} ${p.color(p.icon)} ${title}`);
         console.log(`      ${status} ${chalk.dim('│')} ${p.color(p.label)}`);
@@ -124,88 +124,88 @@ program
     .command("update <index>")
     .description("update if task is completed or not")
     .action((index) => {
-        const todos = sortByPriority(getTodos());
-        const todoIndex = parseInt(index, 10) - 1;
-        if (isNaN(todoIndex) || todoIndex < 0 || todoIndex >= todos.length) {
-            console.error(chalk.red("❌ Invalid number! Please enter a valid todo number."));
+        const tasks = sortByPriority(getTasks());
+        const taskIndex = parseInt(index, 10) - 1;
+        if (isNaN(taskIndex) || taskIndex < 0 || taskIndex >= tasks.length) {
+            console.error(chalk.red("❌ Invalid number! Please enter a valid task number."));
             return;
         }
-        todos[todoIndex].completed = !todos[todoIndex].completed;
-        saveTodos(todos);
-        const status = todos[todoIndex].completed ? chalk.green("completed ✓") : chalk.yellow("pending");
-        console.log(chalk.blue(`🔄 Marked "${todos[todoIndex].title}" as ${status}`));
-        listTodos();
+        tasks[taskIndex].completed = !tasks[taskIndex].completed;
+        saveTasks(tasks);
+        const status = tasks[taskIndex].completed ? chalk.green("completed ✓") : chalk.yellow("pending");
+        console.log(chalk.blue(`🔄 Marked "${tasks[taskIndex].title}" as ${status}`));
+        listTasks();
         process.exit(0);
     })
 
 program
     .command("edit <index> <newtask>")
-    .description("Edit the specific todo with given index")
+    .description("Edit the specific task with given index")
     .action((index, newtask) => {
-        const todos = sortByPriority(getTodos());
-        const todoIndex = parseInt(index, 10) - 1;
-        if (isNaN(todoIndex) || todoIndex < 0 || todoIndex >= todos.length) {
-            console.error(chalk.red("❌ Invalid number! Please enter a valid todo number."));
+        const tasks = sortByPriority(getTasks());
+        const taskIndex = parseInt(index, 10) - 1;
+        if (isNaN(taskIndex) || taskIndex < 0 || taskIndex >= tasks.length) {
+            console.error(chalk.red("❌ Invalid number! Please enter a valid task number."));
             return;
         }
-        const oldTask = todos[todoIndex].title;
-        todos[todoIndex].title = newtask;
-        saveTodos(todos);
+        const oldTask = tasks[taskIndex].title;
+        tasks[taskIndex].title = newtask;
+        saveTasks(tasks);
         console.log(chalk.blue(`✏️  Updated: "${chalk.dim(oldTask)}" → "${chalk.white(newtask)}"`));
-        listTodos();
+        listTasks();
         process.exit(0);
     })
 
 program
     .command("priority <index> <level>")
-    .description("Change priority of a todo (high, medium, low)")
+    .description("Change priority of a task (high, medium, low)")
     .action((index, level) => {
-        const todos = sortByPriority(getTodos());
-        const todoIndex = parseInt(index, 10) - 1;
-        if (isNaN(todoIndex) || todoIndex < 0 || todoIndex >= todos.length) {
-            console.error(chalk.red("❌ Invalid number! Please enter a valid todo number."));
+        const tasks = sortByPriority(getTasks());
+        const taskIndex = parseInt(index, 10) - 1;
+        if (isNaN(taskIndex) || taskIndex < 0 || taskIndex >= tasks.length) {
+            console.error(chalk.red("❌ Invalid number! Please enter a valid task number."));
             process.exit(1);
         }
         if (!["high", "medium", "low"].includes(level)) {
             console.error(chalk.red("❌ Invalid priority! Use: high, medium, or low"));
             process.exit(1);
         }
-        const oldPriority = todos[todoIndex].priority || "medium";
-        todos[todoIndex].priority = level;
-        saveTodos(todos);
+        const oldPriority = tasks[taskIndex].priority || "medium";
+        tasks[taskIndex].priority = level;
+        saveTasks(tasks);
         const p = PRIORITIES[level];
-        console.log(chalk.blue(`🏷️  Changed "${todos[todoIndex].title}" from ${oldPriority} → ${p.icon} ${p.color(level)}`));
-        listTodos();
+        console.log(chalk.blue(`🏷️  Changed "${tasks[taskIndex].title}" from ${oldPriority} → ${p.icon} ${p.color(level)}`));
+        listTasks();
         process.exit(0);
     })
 
 program
     .command("clear")
-    .description("deletes all the completed todos")
+    .description("deletes all the completed tasks")
     .action(() => {
-        const todos = getTodos();
-        const completedCount = todos.filter(t => t.completed).length;
-        const newTodos = todos.filter((todo) => !todo.completed);
-        saveTodos(newTodos);
-        console.log(chalk.yellow(`🧹 Cleared ${completedCount} completed todo(s)`));
-        listTodos();
+        const tasks = getTasks();
+        const completedCount = tasks.filter(t => t.completed).length;
+        const newTasks = tasks.filter((task) => !task.completed);
+        saveTasks(newTasks);
+        console.log(chalk.yellow(`🧹 Cleared ${completedCount} completed task(s)`));
+        listTasks();
         process.exit(0);
     })
 
 program
     .command("remove-all")
-    .description("Delete ALL todos (requires confirmation)")
+    .description("Delete ALL tasks (requires confirmation)")
     .action(async () => {
-        const todos = getTodos();
-        if (todos.length === 0) {
-            console.log(chalk.dim('\n  📭 No todos to remove.'));
+        const tasks = getTasks();
+        if (tasks.length === 0) {
+            console.log(chalk.dim('\n  📭 No tasks to remove.'));
             process.exit(0);
         }
-        console.log(chalk.red.bold(`\n  ⚠️  WARNING: This will permanently delete ALL ${todos.length} todo(s)!`));
+        console.log(chalk.red.bold(`\n  ⚠️  WARNING: This will permanently delete ALL ${tasks.length} task(s)!`));
         const { confirm } = await inquirer.prompt([{
             type: 'confirm',
             name: 'confirm',
-            message: chalk.red(`Are you sure you want to delete all ${todos.length} todo(s)?`),
+            message: chalk.red(`Are you sure you want to delete all ${tasks.length} task(s)?`),
             default: false
         }]);
         if (!confirm) { console.log(chalk.dim('  Cancelled.')); process.exit(0); }
@@ -215,39 +215,39 @@ program
             message: chalk.red.bold('Type "DELETE ALL" to confirm:'),
         }]);
         if (typed.trim() === 'DELETE ALL') {
-            saveTodos([]);
-            console.log(chalk.red(`\n  💀 All ${todos.length} todo(s) have been permanently deleted.`));
+            saveTasks([]);
+            console.log(chalk.red(`\n  💀 All ${tasks.length} task(s) have been permanently deleted.`));
         } else {
-            console.log(chalk.dim('  Confirmation failed. No todos were deleted.'));
+            console.log(chalk.dim('  Confirmation failed. No tasks were deleted.'));
         }
         process.exit(0);
     })
 
 program
     .command("search <keyword>")
-    .description("Find todos containing specific text")
+    .description("Find tasks containing specific text")
     .action((keyword) => {
-        const todos = sortByPriority(getTodos());
-        const searchedTodos = todos.filter(todo =>
-            todo.title.toLowerCase().includes(keyword.toLowerCase())
+        const tasks = sortByPriority(getTasks());
+        const searchedTasks = tasks.filter(task =>
+            task.title.toLowerCase().includes(keyword.toLowerCase())
         );
 
-        if (searchedTodos.length === 0) {
-            console.log(chalk.yellow(`\n  🔍 No todos found matching "${keyword}"\n`));
+        if (searchedTasks.length === 0) {
+            console.log(chalk.yellow(`\n  🔍 No tasks found matching "${keyword}"\n`));
             process.exit(0);
         }
 
         console.log(PB.bold(`\n  ╔════════════════════════════════════╗`));
         console.log(PB.bold(`  ║`) + chalk.white.bold(`   🔍 Results for "${keyword}"`.padEnd(35)) + PB.bold(`║`));
         console.log(PB.bold(`  ╠════════════════════════════════════╣`));
-        searchedTodos.forEach((todo, index) => {
-            const p = PRIORITIES[todo.priority || "medium"];
-            const status = todo.completed
+        searchedTasks.forEach((task, index) => {
+            const p = PRIORITIES[task.priority || "medium"];
+            const status = task.completed
                 ? STATUS_DONE.bold(" ✓ Done   ")
                 : STATUS_PEND.bold(" ○ Pending");
-            const title = todo.completed
-                ? chalk.dim.strikethrough(todo.title)
-                : chalk.white(todo.title);
+            const title = task.completed
+                ? chalk.dim.strikethrough(task.title)
+                : chalk.white(task.title);
             const num = ACCENT_NUM(`  ${(index + 1).toString().padStart(2, ' ')}.`);
             console.log(`${num} ${p.color(p.icon)} ${title}`);
             console.log(`      ${status} ${chalk.dim('│')} ${p.color(p.label)}`);
@@ -260,15 +260,15 @@ program
     .command("stats")
     .description("Show total, completed, pending counts")
     .action(() => {
-        const todos = getTodos();
-        const completed = todos.filter(t => t.completed).length;
-        const pending = todos.length - completed;
-        const progress = todos.length === 0 ? 0 : ((completed / todos.length) * 100).toFixed(1);
+        const tasks = getTasks();
+        const completed = tasks.filter(t => t.completed).length;
+        const pending = tasks.length - completed;
+        const progress = tasks.length === 0 ? 0 : ((completed / tasks.length) * 100).toFixed(1);
 
         // Priority counts
-        const highCount = todos.filter(t => t.priority === "high").length;
-        const mediumCount = todos.filter(t => (t.priority || "medium") === "medium").length;
-        const lowCount = todos.filter(t => t.priority === "low").length;
+        const highCount = tasks.filter(t => t.priority === "high").length;
+        const mediumCount = tasks.filter(t => (t.priority || "medium") === "medium").length;
+        const lowCount = tasks.filter(t => t.priority === "low").length;
 
         // Progress bar
         const barLength = 20;
@@ -276,9 +276,9 @@ program
         const bar = chalk.hex('#8b5cf6')('█'.repeat(filledLength)) + chalk.hex('#3b0764')('░'.repeat(barLength - filledLength));
 
         console.log(PB.bold(`\n  ╔════════════════════════════════════╗`));
-        console.log(PB.bold(`  ║`) + chalk.white.bold(`       📊 TODO STATISTICS          `) + PB.bold(`║`));
+        console.log(PB.bold(`  ║`) + chalk.white.bold(`       📊 TASK STATISTICS          `) + PB.bold(`║`));
         console.log(PB.bold(`  ╠════════════════════════════════════╣`));
-        console.log(PB.bold(`  ║`) + `  📝 Total:     ${chalk.white.bold(todos.length.toString().padStart(3))}               ` + PB.bold(`║`));
+        console.log(PB.bold(`  ║`) + `  📝 Total:     ${chalk.white.bold(tasks.length.toString().padStart(3))}               ` + PB.bold(`║`));
         console.log(PB.bold(`  ║`) + `  ✅ Completed: ${STATUS_DONE.bold(completed.toString().padStart(3))}               ` + PB.bold(`║`));
         console.log(PB.bold(`  ║`) + `  ⏳ Pending:   ${STATUS_PEND.bold(pending.toString().padStart(3))}               ` + PB.bold(`║`));
         console.log(PB.bold(`  ╠════════════════════════════════════╣`));
@@ -316,11 +316,11 @@ function showBanner() {
 }
 
 function showQuickStats() {
-    const todos = getTodos();
-    const total = todos.length;
-    const done = todos.filter(t => t.completed).length;
+    const tasks = getTasks();
+    const total = tasks.length;
+    const done = tasks.filter(t => t.completed).length;
     const pending = total - done;
-    const high = todos.filter(t => t.priority === 'high' && !t.completed).length;
+    const high = tasks.filter(t => t.priority === 'high' && !t.completed).length;
     const progress = total === 0 ? 0 : Math.round((done / total) * 100);
 
     const barLen = 25;
@@ -346,17 +346,17 @@ async function interactiveMenu() {
                 message: chalk.hex('#8b5cf6').bold('What would you like to do?'),
                 choices: [
                     new inquirer.Separator(chalk.dim(' ─── Actions ───────────────')),
-                    { name: '  📋  View All Todos', value: 'list' },
-                    { name: '  ➕  Add New Todo', value: 'add' },
+                    { name: '  📋  View All Tasks', value: 'list' },
+                    { name: '  ➕  Add New Task', value: 'add' },
                     { name: '  ✅  Toggle Complete/Pending', value: 'update' },
-                    { name: '  ✏️   Edit Todo', value: 'edit' },
+                    { name: '  ✏️   Edit Task', value: 'edit' },
                     { name: '  🏷️   Change Priority', value: 'priority' },
                     new inquirer.Separator(chalk.dim(' ─── Manage ────────────────')),
-                    { name: '  🗑️   Delete Todo', value: 'delete' },
+                    { name: '  🗑️   Delete Task', value: 'delete' },
                     { name: '  🧹  Clear Completed', value: 'clear' },
-                    { name: chalk.red('  💀  Remove ALL Todos'), value: 'remove-all' },
+                    { name: chalk.red('  💀  Remove ALL Tasks'), value: 'remove-all' },
                     new inquirer.Separator(chalk.dim(' ─── Info ──────────────────')),
-                    { name: '  🔍  Search Todos', value: 'search' },
+                    { name: '  🔍  Search Tasks', value: 'search' },
                     { name: '  📊  View Statistics', value: 'stats' },
                     new inquirer.Separator(chalk.dim(' ───────────────────────────')),
                     { name: chalk.dim('  🚪  Exit'), value: 'exit' },
@@ -385,13 +385,13 @@ async function handleAction(action) {
                 name: 'filterChoice',
                 message: 'Filter by priority?',
                 choices: [
-                    { name: '  All Todos', value: null },
+                    { name: '  All Tasks', value: null },
                     { name: '  🔴 High Only', value: 'high' },
                     { name: '  🟡 Medium Only', value: 'medium' },
                     { name: '  🟢 Low Only', value: 'low' },
                 ]
             }]);
-            listTodos(filterChoice);
+            listTasks(filterChoice);
             break;
         }
 
@@ -413,44 +413,44 @@ async function handleAction(action) {
                 ],
                 default: 'medium'
             }]);
-            const todos = getTodos();
-            todos.push({ title: task.trim(), completed: false, id: Date.now(), priority });
-            saveTodos(todos);
+            const tasks = getTasks();
+            tasks.push({ title: task.trim(), completed: false, id: Date.now(), priority });
+            saveTasks(tasks);
             const p = PRIORITIES[priority];
             console.log(chalk.green(`\n  ✨ Added: "${task.trim()}" ${p.icon} ${p.color(p.label)}`));
-            listTodos();
+            listTasks();
             break;
         }
 
         case 'update': {
-            const todos = sortByPriority(getTodos());
-            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to update.')); break; }
+            const tasks = sortByPriority(getTasks());
+            if (tasks.length === 0) { console.log(chalk.dim('  📭 No tasks to update.')); break; }
             const { selected } = await inquirer.prompt([{
                 type: 'list',
                 name: 'selected',
-                message: 'Which todo to toggle?',
-                choices: todos.map((t, i) => ({
+                message: 'Which task to toggle?',
+                choices: tasks.map((t, i) => ({
                     name: `  ${(i + 1).toString().padStart(2)}. ${PRIORITIES[t.priority || 'medium'].icon} ${t.completed ? chalk.dim.strikethrough(t.title) : t.title} ${t.completed ? chalk.green('✓') : chalk.red('○')}`,
                     value: i
                 })),
                 pageSize: 15
             }]);
-            todos[selected].completed = !todos[selected].completed;
-            saveTodos(todos);
-            const status = todos[selected].completed ? chalk.green('completed ✓') : chalk.yellow('pending');
-            console.log(chalk.blue(`\n  🔄 Marked "${todos[selected].title}" as ${status}`));
-            listTodos();
+            tasks[selected].completed = !tasks[selected].completed;
+            saveTasks(tasks);
+            const status = tasks[selected].completed ? chalk.green('completed ✓') : chalk.yellow('pending');
+            console.log(chalk.blue(`\n  🔄 Marked "${tasks[selected].title}" as ${status}`));
+            listTasks();
             break;
         }
 
         case 'edit': {
-            const todos = sortByPriority(getTodos());
-            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to edit.')); break; }
+            const tasks = sortByPriority(getTasks());
+            if (tasks.length === 0) { console.log(chalk.dim('  📭 No tasks to edit.')); break; }
             const { selected } = await inquirer.prompt([{
                 type: 'list',
                 name: 'selected',
-                message: 'Which todo to edit?',
-                choices: todos.map((t, i) => ({
+                message: 'Which task to edit?',
+                choices: tasks.map((t, i) => ({
                     name: `  ${(i + 1).toString().padStart(2)}. ${PRIORITIES[t.priority || 'medium'].icon} ${t.title}`,
                     value: i
                 })),
@@ -459,26 +459,26 @@ async function handleAction(action) {
             const { newtask } = await inquirer.prompt([{
                 type: 'input',
                 name: 'newtask',
-                message: `New text (current: "${todos[selected].title}"):`,
-                default: todos[selected].title,
+                message: `New text (current: "${tasks[selected].title}"):`,
+                default: tasks[selected].title,
                 validate: input => input.trim() ? true : 'Task cannot be empty!'
             }]);
-            const oldTask = todos[selected].title;
-            todos[selected].title = newtask.trim();
-            saveTodos(todos);
+            const oldTask = tasks[selected].title;
+            tasks[selected].title = newtask.trim();
+            saveTasks(tasks);
             console.log(chalk.blue(`\n  ✏️  Updated: "${chalk.dim(oldTask)}" → "${chalk.white(newtask.trim())}"`));
-            listTodos();
+            listTasks();
             break;
         }
 
         case 'priority': {
-            const todos = sortByPriority(getTodos());
-            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos.')); break; }
+            const tasks = sortByPriority(getTasks());
+            if (tasks.length === 0) { console.log(chalk.dim('  📭 No tasks.')); break; }
             const { selected } = await inquirer.prompt([{
                 type: 'list',
                 name: 'selected',
-                message: 'Change priority for which todo?',
-                choices: todos.map((t, i) => ({
+                message: 'Change priority for which task?',
+                choices: tasks.map((t, i) => ({
                     name: `  ${(i + 1).toString().padStart(2)}. ${PRIORITIES[t.priority || 'medium'].icon} ${t.title} [${(t.priority || 'medium').toUpperCase()}]`,
                     value: i
                 })),
@@ -493,24 +493,24 @@ async function handleAction(action) {
                     { name: '🟡 Medium', value: 'medium' },
                     { name: '🟢 Low', value: 'low' },
                 ],
-                default: todos[selected].priority || 'medium'
+                default: tasks[selected].priority || 'medium'
             }]);
-            todos[selected].priority = level;
-            saveTodos(todos);
+            tasks[selected].priority = level;
+            saveTasks(tasks);
             const p = PRIORITIES[level];
-            console.log(chalk.blue(`\n  🏷️  Changed "${todos[selected].title}" → ${p.icon} ${p.color(level)}`));
-            listTodos();
+            console.log(chalk.blue(`\n  🏷️  Changed "${tasks[selected].title}" → ${p.icon} ${p.color(level)}`));
+            listTasks();
             break;
         }
 
         case 'delete': {
-            const todos = sortByPriority(getTodos());
-            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to delete.')); break; }
+            const tasks = sortByPriority(getTasks());
+            if (tasks.length === 0) { console.log(chalk.dim('  📭 No tasks to delete.')); break; }
             const { selected } = await inquirer.prompt([{
                 type: 'list',
                 name: 'selected',
-                message: 'Which todo to delete?',
-                choices: todos.map((t, i) => ({
+                message: 'Which task to delete?',
+                choices: tasks.map((t, i) => ({
                     name: `  ${(i + 1).toString().padStart(2)}. ${PRIORITIES[t.priority || 'medium'].icon} ${t.title}`,
                     value: i
                 })),
@@ -519,50 +519,50 @@ async function handleAction(action) {
             const { confirm } = await inquirer.prompt([{
                 type: 'confirm',
                 name: 'confirm',
-                message: `Delete "${todos[selected].title}"?`,
+                message: `Delete "${tasks[selected].title}"?`,
                 default: false
             }]);
             if (confirm) {
-                const removed = todos.splice(selected, 1);
-                saveTodos(todos);
+                const removed = tasks.splice(selected, 1);
+                saveTasks(tasks);
                 console.log(chalk.yellow(`\n  🗑️  Deleted: "${removed[0].title}"`));
             } else {
                 console.log(chalk.dim('  Cancelled.'));
             }
-            listTodos();
+            listTasks();
             break;
         }
 
         case 'clear': {
-            const todos = getTodos();
-            const completedCount = todos.filter(t => t.completed).length;
+            const tasks = getTasks();
+            const completedCount = tasks.filter(t => t.completed).length;
             if (completedCount === 0) {
-                console.log(chalk.dim('  No completed todos to clear.'));
+                console.log(chalk.dim('  No completed tasks to clear.'));
                 break;
             }
             const { confirm } = await inquirer.prompt([{
                 type: 'confirm',
                 name: 'confirm',
-                message: `Clear ${completedCount} completed todo(s)?`,
+                message: `Clear ${completedCount} completed task(s)?`,
                 default: true
             }]);
             if (confirm) {
-                const newTodos = todos.filter(t => !t.completed);
-                saveTodos(newTodos);
-                console.log(chalk.yellow(`\n  🧹 Cleared ${completedCount} completed todo(s)`));
+                const newTasks = tasks.filter(t => !t.completed);
+                saveTasks(newTasks);
+                console.log(chalk.yellow(`\n  🧹 Cleared ${completedCount} completed task(s)`));
             }
-            listTodos();
+            listTasks();
             break;
         }
 
         case 'remove-all': {
-            const todos = getTodos();
-            if (todos.length === 0) { console.log(chalk.dim('  📭 No todos to remove.')); break; }
-            console.log(chalk.red.bold(`\n  ⚠️  WARNING: This will permanently delete ALL ${todos.length} todo(s)!`));
+            const tasks = getTasks();
+            if (tasks.length === 0) { console.log(chalk.dim('  📭 No tasks to remove.')); break; }
+            console.log(chalk.red.bold(`\n  ⚠️  WARNING: This will permanently delete ALL ${tasks.length} task(s)!`));
             const { confirm } = await inquirer.prompt([{
                 type: 'confirm',
                 name: 'confirm',
-                message: chalk.red(`Are you sure you want to delete all ${todos.length} todo(s)?`),
+                message: chalk.red(`Are you sure you want to delete all ${tasks.length} task(s)?`),
                 default: false
             }]);
             if (!confirm) { console.log(chalk.dim('  Cancelled.')); break; }
@@ -572,10 +572,10 @@ async function handleAction(action) {
                 message: chalk.red.bold('Type "DELETE ALL" to confirm:'),
             }]);
             if (typed.trim() === 'DELETE ALL') {
-                saveTodos([]);
-                console.log(chalk.red(`\n  💀 All ${todos.length} todo(s) have been permanently deleted.`));
+                saveTasks([]);
+                console.log(chalk.red(`\n  💀 All ${tasks.length} task(s) have been permanently deleted.`));
             } else {
-                console.log(chalk.dim('  Confirmation failed. No todos were deleted.'));
+                console.log(chalk.dim('  Confirmation failed. No tasks were deleted.'));
             }
             break;
         }
@@ -587,18 +587,18 @@ async function handleAction(action) {
                 message: 'Search for:',
                 validate: input => input.trim() ? true : 'Enter a keyword!'
             }]);
-            const todos = sortByPriority(getTodos());
-            const results = todos.filter(t => t.title.toLowerCase().includes(keyword.toLowerCase().trim()));
+            const tasks = sortByPriority(getTasks());
+            const results = tasks.filter(t => t.title.toLowerCase().includes(keyword.toLowerCase().trim()));
             if (results.length === 0) {
-                console.log(chalk.yellow(`\n  🔍 No todos found matching "${keyword.trim()}"`));
+                console.log(chalk.yellow(`\n  🔍 No tasks found matching "${keyword.trim()}"`));
             } else {
                 console.log(PB.bold(`\n  ╔════════════════════════════════════╗`));
                 console.log(PB.bold(`  ║`) + chalk.white.bold(`   🔍 Results for "${keyword.trim()}"`.padEnd(35)) + PB.bold(`║`));
                 console.log(PB.bold(`  ╠════════════════════════════════════╣`));
-                results.forEach((todo, index) => {
-                    const p = PRIORITIES[todo.priority || 'medium'];
-                    const status = todo.completed ? STATUS_DONE.bold(' ✓ Done   ') : STATUS_PEND.bold(' ○ Pending');
-                    const title = todo.completed ? chalk.dim.strikethrough(todo.title) : chalk.white(todo.title);
+                results.forEach((task, index) => {
+                    const p = PRIORITIES[task.priority || 'medium'];
+                    const status = task.completed ? STATUS_DONE.bold(' ✓ Done   ') : STATUS_PEND.bold(' ○ Pending');
+                    const title = task.completed ? chalk.dim.strikethrough(task.title) : chalk.white(task.title);
                     console.log(`  ${ACCENT_NUM((index + 1).toString().padStart(2) + '.')} ${p.color(p.icon)} ${title}`);
                     console.log(`      ${status} ${chalk.dim('│')} ${p.color(p.label)}`);
                 });
@@ -609,21 +609,21 @@ async function handleAction(action) {
         }
 
         case 'stats': {
-            const todos = getTodos();
-            const completed = todos.filter(t => t.completed).length;
-            const pending = todos.length - completed;
-            const progress = todos.length === 0 ? 0 : ((completed / todos.length) * 100).toFixed(1);
-            const highCount = todos.filter(t => t.priority === 'high').length;
-            const mediumCount = todos.filter(t => (t.priority || 'medium') === 'medium').length;
-            const lowCount = todos.filter(t => t.priority === 'low').length;
+            const tasks = getTasks();
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = tasks.length - completed;
+            const progress = tasks.length === 0 ? 0 : ((completed / tasks.length) * 100).toFixed(1);
+            const highCount = tasks.filter(t => t.priority === 'high').length;
+            const mediumCount = tasks.filter(t => (t.priority || 'medium') === 'medium').length;
+            const lowCount = tasks.filter(t => t.priority === 'low').length;
             const barLength = 20;
             const filledLength = Math.round((progress / 100) * barLength);
             const bar = chalk.hex('#8b5cf6')('█'.repeat(filledLength)) + chalk.hex('#3b0764')('░'.repeat(barLength - filledLength));
 
             console.log(PB.bold(`\n  ╔════════════════════════════════════╗`));
-            console.log(PB.bold(`  ║`) + chalk.white.bold(`       📊 TODO STATISTICS          `) + PB.bold(`║`));
+            console.log(PB.bold(`  ║`) + chalk.white.bold(`       📊 TASK STATISTICS          `) + PB.bold(`║`));
             console.log(PB.bold(`  ╠════════════════════════════════════╣`));
-            console.log(PB.bold(`  ║`) + `  📝 Total:     ${chalk.white.bold(todos.length.toString().padStart(3))}               ` + PB.bold(`║`));
+            console.log(PB.bold(`  ║`) + `  📝 Total:     ${chalk.white.bold(tasks.length.toString().padStart(3))}               ` + PB.bold(`║`));
             console.log(PB.bold(`  ║`) + `  ✅ Completed: ${STATUS_DONE.bold(completed.toString().padStart(3))}               ` + PB.bold(`║`));
             console.log(PB.bold(`  ║`) + `  ⏳ Pending:   ${STATUS_PEND.bold(pending.toString().padStart(3))}               ` + PB.bold(`║`));
             console.log(PB.bold(`  ╠════════════════════════════════════╣`));
