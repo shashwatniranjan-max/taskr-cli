@@ -1,21 +1,56 @@
-# 📝 Taskr CLI
+<div align="center">
 
-A powerful and intuitive command-line todo application built with Node.js and Commander.js.
+# ✨ Taskr CLI
 
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![CLI](https://img.shields.io/badge/CLI-Tool-blue?style=for-the-badge)
+### A beautiful, dual-mode command-line todo manager
 
-## ✨ Features
+[![Node.js](https://img.shields.io/badge/Node.js-18+-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![CLI](https://img.shields.io/badge/CLI-Interactive%20%2B%20Command-blueviolet?style=for-the-badge&logo=windowsterminal&logoColor=white)](#)
+[![License](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)](#-license)
 
-| Command | Description |
-|---------|-------------|
-| ➕ `add` | Add new tasks quickly |
-| 📋 `list` | View all todos with status indicators |
-| ✏️ `edit` | Modify existing tasks |
-| ✅ `update` | Toggle completion status |
-| 🗑️ `delete` | Remove tasks by index |
-| 🧹 `clear` | Remove all completed tasks |
+<img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
+</div>
+
+## 📸 Preview
+
+```text
+  ╔════════════════════════════════════╗
+  ║         📋 YOUR TODOS             ║
+  ╠════════════════════════════════════╣
+   1. ▲ Fix critical bug
+      ✓ Done    │ HIGH
+   2. ◆ Build a CLI app
+      ○ Pending │ MED
+   3. ▽ Read documentation
+      ○ Pending │ LOW
+  ╚════════════════════════════════════╝
+```
+
+```text
+  ╔════════════════════════════════════╗
+  ║       📊 TODO STATISTICS          ║
+  ╠════════════════════════════════════╣
+  ║  📝 Total:       3                ║
+  ║  ✅ Completed:   1                ║
+  ║  ⏳ Pending:     2                ║
+  ╠════════════════════════════════════╣
+  ║  ▲ High:        1                ║
+  ║  ◆ Medium:      1                ║
+  ║  ▽ Low:         1                ║
+  ╠════════════════════════════════════╣
+  ║  ███████░░░░░░░░░░░░░ 33.3%      ║
+  ╚════════════════════════════════════╝
+```
+
+## ⚡ Features
+
+- ✅ Two usage modes: argument-based CLI + interactive menu mode
+- 🏷️ Priority system (`high`, `medium`, `low`) with sorted output
+- 🔍 Search command and 📊 statistics dashboard with progress bar
+- 💾 Local persistence in `todos.json` (no database required)
+- 🎨 Colorful terminal UI using `chalk`, `figlet`, and `gradient-string`
+- 🛡️ Safe destructive flow for `remove-all` with double confirmation
 
 ## 🚀 Quick Start
 
@@ -27,106 +62,93 @@ cd taskr-cli
 # Install dependencies
 npm install
 
-# Add your first todo
-node todoCommander.js add "Learn Node.js"
+# Run interactive mode (no args)
+node todo.js
 
-# View all todos
-node todoCommander.js list
+# Or run direct commands
+node todo.js add "Build Taskr" -p high
+node todo.js list
 ```
 
-## 📖 Commands
+## 📖 Command Guide
 
-### ➕ Add a new todo
+| Command | Description |
+|---------|-------------|
+| `node todo.js` | Launch interactive menu mode |
+| `node todo.js add "task" -p <level>` | Add a task with optional priority |
+| `node todo.js list` | List all todos |
+| `node todo.js list -p high` | List only one priority |
+| `node todo.js update <index>` | Toggle done/pending |
+| `node todo.js edit <index> "new text"` | Edit a task title |
+| `node todo.js delete <index>` | Delete one task |
+| `node todo.js priority <index> <level>` | Change task priority |
+| `node todo.js search <keyword>` | Search todos by keyword |
+| `node todo.js stats` | Show totals + progress bar |
+| `node todo.js clear` | Remove completed todos |
+| `node todo.js remove-all` | Remove all todos (double confirm) |
+
+### Priority Levels
+
+| Level | Icon | Label |
+|-------|------|-------|
+| `high` | ▲ | HIGH |
+| `medium` | ◆ | MED |
+| `low` | ▽ | LOW |
+
+## 🧪 Run Tests
+
 ```bash
-node todoCommander.js add "Buy groceries"
-# Output: Added the todo: Buy groceries
+node test.js
 ```
 
-### 📋 List all todos
-```bash
-node todoCommander.js list
-```
-```
-------Todo list------
-1. Buy groceries ..❌Pending
-2. Finish homework ..✅Done
-3. Call mom ..❌Pending
-----------------------
-```
-
-### ✅ Toggle todo status
-```bash
-node todoCommander.js update 1
-# Toggles between ✅Done and ❌Pending
-```
-
-### ✏️ Edit a todo
-```bash
-node todoCommander.js edit 1 "Buy organic groceries"
-# Output: updated the todo on number 1. with: Buy organic groceries
-```
-
-### 🗑️ Delete a todo
-```bash
-node todoCommander.js delete 2
-# Output: Deleted todo: Finish homework
-```
-
-### 🧹 Clear completed todos
-```bash
-node todoCommander.js clear
-# Output: completed todos are cleared
-```
-
-## 🛠️ Tech Stack
-
-- **Node.js** - Runtime environment
-- **Commander.js** - CLI framework for parsing arguments
-- **File System (fs)** - JSON-based data persistence
+The test script runs an end-to-end CLI flow and restores your original `todos.json` at the end.
 
 ## 📁 Project Structure
 
-```
+```text
 todo-commander-cli/
-├── todoCommander.js    # Main CLI application
-├── todos.json          # Data storage (auto-generated)
-├── package.json        # Project dependencies
-└── README.md           # Documentation
+├── todo.js                  # Main CLI + interactive app
+├── test.js                  # Comprehensive command flow test
+├── todos.json               # Local todo storage
+├── package.json             # Project metadata and dependencies
+├── package-lock.json
+├── README.md
+└── walkthrough.md.resolved
 ```
 
 ## 💾 Data Format
 
 Todos are stored in `todos.json`:
+
 ```json
 [
   {
-    "title": "Learn Node.js",
+    "title": "Build Taskr",
     "completed": false,
-    "id": 1706198400000
+    "id": 1771791333442,
+    "priority": "high"
   }
 ]
 ```
 
-## 🚀 Roadmap
-
-- [ ] 🔍 Search todos by keyword
-- [ ] 📊 Stats command (total/done/pending)
-- [ ] 🎨 Colored output with chalk
-- [ ] ⚡ Priority levels (high/medium/low)
-- [ ] 📅 Due dates
-
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Open a Pull Request
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m "Add your feature"`
+4. Push branch: `git push origin feature/your-feature`
+5. Open a pull request
 
 ## 📜 License
 
-MIT License - feel free to use this project for learning!
+MIT
 
 ---
 
-⭐ **Star this repo if you find it helpful!**
+<div align="center">
+
+Made with ❤️ by Shree
+
+⭐ Star the repo if it helped you stay productive.
+
+</div>
