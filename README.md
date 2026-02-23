@@ -62,30 +62,35 @@ cd taskr-cli
 # Install dependencies
 npm install
 
-# Run interactive mode (no args)
-node todo.js
+# Install globally (recommended)
+npm install -g .
 
-# Or run direct commands
-node todo.js add "Build Taskr" -p high
-node todo.js list
+# Run interactive mode (no args)
+todo
+
+# Run commands
+todo add "Build Taskr" -p high
+todo list
 ```
+
+For local development without global install, use `node todo.js ...`.
 
 ## 📖 Command Guide
 
 | Command | Description |
 |---------|-------------|
-| `node todo.js` | Launch interactive menu mode |
-| `node todo.js add "task" -p <level>` | Add a task with optional priority |
-| `node todo.js list` | List all todos |
-| `node todo.js list -p high` | List only one priority |
-| `node todo.js update <index>` | Toggle done/pending |
-| `node todo.js edit <index> "new text"` | Edit a task title |
-| `node todo.js delete <index>` | Delete one task |
-| `node todo.js priority <index> <level>` | Change task priority |
-| `node todo.js search <keyword>` | Search todos by keyword |
-| `node todo.js stats` | Show totals + progress bar |
-| `node todo.js clear` | Remove completed todos |
-| `node todo.js remove-all` | Remove all todos (double confirm) |
+| `todo` | Launch interactive menu mode |
+| `todo add "task" -p <level>` | Add a task with optional priority |
+| `todo list` | List all todos |
+| `todo list -p high` | List only one priority |
+| `todo update <index>` | Toggle done/pending |
+| `todo edit <index> "new text"` | Edit a task title |
+| `todo delete <index>` | Delete one task |
+| `todo priority <index> <level>` | Change task priority |
+| `todo search <keyword>` | Search todos by keyword |
+| `todo stats` | Show totals + progress bar |
+| `todo clear` | Remove completed todos |
+| `todo remove-all` | Remove all todos (double confirm) |
 
 ### Priority Levels
 
@@ -147,7 +152,7 @@ MIT
 
 <div align="center">
 
-Made with ❤️ by Shree
+Made with ❤️ by Shashwat
 
 ⭐ Star the repo if it helped you stay productive.
 
