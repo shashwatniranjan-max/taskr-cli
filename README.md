@@ -112,13 +112,31 @@ The test script runs an end-to-end CLI flow and restores your original `tasks.js
 
 ```text
 taskr-cli/
-├── index.js                  # Main CLI + interactive app
-├── test.js                  # Comprehensive command flow test
-├── tasks.json               # Local task storage
-├── package.json             # Project metadata and dependencies
-├── package-lock.json
-├── README.md
-└── walkthrough.md.resolved
+├── index.js                     # Slim entry point
+├── src/
+│   ├── commands/                # One file per CLI command
+│   │   ├── index.js             # Barrel — registers all commands
+│   │   ├── add.js
+│   │   ├── list.js
+│   │   ├── delete.js
+│   │   ├── update.js
+│   │   ├── edit.js
+│   │   ├── priority.js
+│   │   ├── clear.js
+│   │   ├── removeAll.js
+│   │   ├── search.js
+│   │   └── stats.js
+│   ├── services/
+│   │   └── taskService.js       # Read / write / sort tasks
+│   ├── utils/
+│   │   ├── theme.js             # Colors, gradients, priority config
+│   │   └── display.js           # List, search-results, stats renderers
+│   └── interactive/
+│       └── menu.js              # Banner, quick-stats, interactive loop
+├── test.js                      # End-to-end CLI tests
+├── tasks.json                   # Local task storage (auto-generated)
+├── package.json
+└── README.md
 ```
 
 ## 💾 Data Format
